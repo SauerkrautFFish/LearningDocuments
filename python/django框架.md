@@ -138,4 +138,117 @@ def something(req):
     <input type="text">
     <input type="submit">
 </form>
+## 数据库
 
+下载依赖
+
+pip install mysqlclient
+
+### orm
+
+帮助我们创建、修改、删除数据库中的表。（无法创建数据库）
+
+操作表中的数据。（不用写sql）
+
+#### 配置
+
+连接mysql需要添加以下配置
+
+```python
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "test_django",
+        "USER": "root",
+        "PASSWORD": "123456",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    }
+}
+```
+
+#### 创建表/删除表/新增列/删除列
+
+在models.py里创建一个类，继承models.Model
+
+```python
+class ArticleInfo(models.Model):
+    article_id = models.AutoField(primary_key=True)
+    title = models.TextField()
+    abstract = models.TextField()
+    content = models.TextField()
+    name = models.CharField(max_length=32)
+    password = models.IntegerField(default=2) # 默认值
+    password1 = models.IntegerField(null=True, blank=True) #允许为空
+    publish_date = models.DateTimeField(auto_now=True)  # auto_now默认当前时间
+```
+
+执行两个命令即可在数据库中创建表/删除表/新增列/删除列(需要在settings.py注册应用)：
+
+```python
+python manage.py makemigrations
+python manage.py migrate
+```
+
+删除列后再新增，由于表中可能已经存在数据，所以必须对新增的列有一些操作：
+
+1.makemigrations的时候手动输入默认值
+
+2.在model里设置默认值
+
+3.允许字段为空
+
+#### 插入数据
+
+```python
+ArticleInfo.objects.create(title="123", password="654789")
+```
+
+#### 删除数据
+
+```python
+# filter过滤条件
+ArticleInfo.objects.filter(title="123").delete()
+# 所有
+ArticleInfo.objects.all().delete()
+```
+
+#### 查找数据
+
+```python
+data_list = ArticleInfo.objects.all() #QuerySet类型
+print(data_list) #[对象, 对象...]
+# <QuerySet [<ArticleInfo: ArticleInfo object (1)>, <ArticleInfo: ArticleInfo object (2)>, <ArticleInfo: ArticleInfo object (3)>]>
+for obj in query_set:
+	print(obj.title, obj.name)
+# 筛选
+data_list = ArticleInfo.objects.filter(article_id=1) #对象数组
+data = ArticleInfo.objects.filter(article_id=1).first() #对象
+```
+
+#### 更新数据
+
+```python
+ArticleInfo.objects.filter(article_id=1).update(password="999")
+ArticleInfo.objects.all().update(password="999")
+```
+
+#### 设置索引
+
+```python
+class ArticleInf111o11111(models.Model):
+    normal_index = models.TextField(db_index=True) # 普通索引
+    unique_index = models.CharField(unique=True, max_length=100) # 唯一索引
+    content = models.CharField(max_length=32)
+    name = models.CharField(max_length=32)
+    password = models.IntegerField()
+    publish_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("content", "name") # 联合唯一索引
+        index_together = ["password", "publish_date"] # 联合索引
+
+```
