@@ -74,7 +74,7 @@ dockerfile
 
 2.启动容器
 
-运行：docker run
+运行：docker run（通过docker run --help可以看支持参数）
 
 查看：docker ps
 
